@@ -43,7 +43,6 @@ var app = {
 		var track;
 		
 		$("#play").on("tap", function(){
-			console.log("play tap");
 			startEmulatedTracker();
 		});
 
@@ -58,7 +57,14 @@ var app = {
 		function startEmulatedTracker() {
 			if(typeof(geoIntervalID) == "undefined") {
 				startTime = Date.now();
-				currentPosition = new LatLon(43.37372818,1.74102725);
+				currentPosition = {
+					coords: {
+						latitude: 43.37372818,
+						longitude: 1.74102725,
+						altitude:280
+					},
+					timestamp: Date.now()
+				};
 				distance = 0;
 				rythme = 0;
 				track = new Array();
@@ -75,7 +81,7 @@ var app = {
 		function startTracker() {
 			if(typeof(geolocationID) == "undefined") {
 				startTime = Date.now();
-				currentPosition = new LatLon(43.37372818,1.74102725);
+				currentPosition = undefined;
 				distance = 0;
 				rythme = 0;
 				track = new Array();
@@ -103,68 +109,62 @@ var app = {
 			}
 		}
 		
-		//function saveTrack() {
-			//var now = new Date();
-			//var gpxHeader =
-				//'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' + '\n' +
-				//'<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="Tracker" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">' + '\n' +
-				//'  <metadata>' + '\n' +
-				//'    <link href="http://www.garmin.com">' + '\n' +
-				//'      <text>Garmin International</text>' + '\n' +
-				//'    </link>' + '\n' +
-				//'    <time>' + now.toISOString() + '</time>' + '\n' +
-				//'  </metadata>' + '\n' +
-				//'  <trk>' + '\n' +
-				//'    <name>Track ' + now.toLocaleString() + '</name>' + '\n' +
-				//'    <trkseg>';
-			//var gpxFooter =
-				//'    </trkseg>' + '\n' +
-				//'  </trk>' + '\n' +
-				//'</gpx> ';
-			//var gpxTrack = gpxHeader;
-			////track.forEach(function (trkpt) {
-				////gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
-				////gpxTrack += '        <ele>' + trkpt.altitude + '</ele>' + '\n';
-				////gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
-				////gpxTrack += '      </trkpt>' + '\n';	
-			////});
-			////for (let trkpt of track) {
-				////gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
-				////gpxTrack += '        <ele>' + trkpt.altitude + '</ele>' + '\n';
-				////gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
-				////gpxTrack += '      </trkpt>' + '\n';
-			////};
+		function saveTrack() {
+			var now = new Date();
+			var gpxHeader =
+				'<?xml version="1.0" encoding="UTF-8" standalone="no" ?>' + '\n' +
+				'<gpx xmlns="http://www.topografix.com/GPX/1/1" creator="Tracker" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">' + '\n' +
+				'  <metadata>' + '\n' +
+				'    <link href="http://tracker.esponde.net">' + '\n' +
+				'      <text>tracker.esponde.net</text>' + '\n' +
+				'    </link>' + '\n' +
+				'    <time>' + now.toISOString() + '</time>' + '\n' +
+				'  </metadata>' + '\n' +
+				'  <trk>' + '\n' +
+				'    <name>Track ' + now.yyyymmdd() + '</name>' + '\n' +
+				'    <trkseg>';
+			var gpxFooter =
+				'    </trkseg>' + '\n' +
+				'  </trk>' + '\n' +
+				'</gpx> ';
+				
+			var gpxTrack = gpxHeader;
+			track.forEach(function (trkpt) {
+				gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
+				gpxTrack += '        <ele>' + trkpt.coords.altitude + '</ele>' + '\n';
+				gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
+				gpxTrack += '      </trkpt>' + '\n';	
+			});
+			gpxTrack += gpxFooter;
+			//for (let trkpt of track) {
+				//gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
+				//gpxTrack += '        <ele>' + trkpt.altitude + '</ele>' + '\n';
+				//gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
+				//gpxTrack += '      </trkpt>' + '\n';
+			//};
 
-			//window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
+			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
 
-			//function gotFS(fileSystem) {
-				//fileSystem.root.getFile("readme.txt", {create: true, exclusive: false}, gotFileEntry, fail);
-			//}
+			function gotFS(fileSystem) {
+				console.log("getFile: " + "Track-" + now.yyyymmdd() + ".gpx");
+				fileSystem.root.getFile("Track-" + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
+			}
 
-			//function gotFileEntry(fileEntry) {
-				//fileEntry.createWriter(gotFileWriter, fail);
-			//}
+			function gotFileEntry(fileEntry) {
+				fileEntry.createWriter(gotFileWriter, fail);
+			}
 
-			//function gotFileWriter(writer) {
-				//writer.write("some sample text");
-				//writer.onwriteend = function(evt) {
-					//console.log("contents of file now 'some sample text'");
-					//writer.truncate(11);  
-					//writer.onwriteend = function(evt) {
-						//console.log("contents of file now 'some sample'");
-						//writer.seek(4);
-						//writer.write(" different text");
-						//writer.onwriteend = function(evt){
-							//console.log("contents of file now 'some different text'");
-						//};
-					//};
-				//};
-			//}
+			function gotFileWriter(writer) {
+				writer.write(gpxTrack);
+				writer.onwriteend = function(evt) {
+					console.log("file write done");
+				};
+			}
 
-			//function fail(error) {
-				//console.log(error.code);
-			//}
-		//}
+			function fail(error) {
+				console.log(error.code);
+			}
+		}
 		
 		function onTimeInterval() {
 			updateTimerIndicator();
@@ -173,7 +173,7 @@ var app = {
 		function onGeolocationInterval() {
 			var step = 0.015 + 0.015*0.2*Math.random() - 0.015*0.1;
 			var angle = 45 + 45*0.2*Math.random() - 45*0.1;
-			var newPosition = currentPosition.destinationPoint(angle,step)
+			var newPosition = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude).destinationPoint(angle,step);
 			var position = {
 				coords: {
 					latitude: newPosition.lat,
@@ -187,13 +187,32 @@ var app = {
 		}
 		
 		function onGeolocationUpdate(position) {
-			var newPosition = new LatLon(position.coords.latitude, position.coords.longitude);
-			var step = currentPosition.distanceTo(newPosition);
-			
-			currentPosition = newPosition;
-			distance += step;
-			rythme = (rythme + 1/(step*12)) / 2;
-			
+			if(typeof(currentPosition) !== "undefined") {
+				var newLatLon = new LatLon(position.coords.latitude, position.coords.longitude);
+				var currentLatLon = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude)
+				var step = currentLatLon.distanceTo(newLatLon);
+				var stepTime = (position.timestamp - currentPosition.timestamp) / 1000; //seconds
+
+				currentPosition = position;
+				distance += step;
+				if(step != 0) {
+					rythme = (rythme + 1/(step*(60/stepTime))) / 2;
+				}
+				
+				console.log(new Date().toLocaleTimeString() 
+							+ ' Latitude: ' + position.coords.latitude  
+							+ ' Longitude: ' + position.coords.longitude 
+							+ ' Altitude: ' + position.coords.altitude
+							+ ' Accuracy: ' + position.coords.accuracy
+							+ ' Speed: ' + position.coords.speed
+							+ ' Time: ' + new Date(position.timestamp).toISOString());
+				console.log(new Date().toLocaleTimeString() 
+							+ ' Step: ' + step*1000
+							+ ' stepTime: ' + stepTime);
+							
+			} else {
+				currentPosition = position;			
+			}
 			track.push(position);
 			updateGeolocationIndicators();
 		}
@@ -225,5 +244,21 @@ var app = {
 			document.getElementById("distance").innerHTML = (distance).toFixed(2);
 			document.getElementById("rythme").innerHTML = rythme.toFixed(1);
 		}
+		
+		Date.prototype.yyyymmdd = function() {                                 
+			var yyyy = this.getFullYear().toString();                                    
+			var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based         
+			var dd  = this.getDate().toString();             
+			var hh  = this.getHours().toString();             
+			var min  = this.getMinutes().toString();             
+                            
+			return yyyy 
+			       + '-' + (mm[1]?mm:"0"+mm[0]) 
+			       + '-' + (dd[1]?dd:"0"+dd[0])
+			       + '-' + (hh[1]?hh:"0"+hh[0])
+			       + '-' + (min[1]?min:"0"+min[0]);
+		};  
+
+d
     }
 };

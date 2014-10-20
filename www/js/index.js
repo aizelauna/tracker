@@ -42,16 +42,36 @@ var app = {
 		var rythme = 0; // min/km
 		var track;
 		
+		$("#play").removeAttr("disabled");
+		$("#pause").attr("disabled", "");
+		$("#stop").attr("disabled", "");
+		$("#save").attr("disabled", "");
+		
 		$("#play").on("tap", function(){
 			startEmulatedTracker();
+			
+			$("#play").attr("disabled", "");
+			$("#pause").removeAttr("disabled", "");
+			$("#stop").removeAttr("disabled", "");
+			$("#save").attr("disabled", "");
 		});
 
 		$("#stop").on("tap", function(){
 			stopTracker();
+			
+			$("#play").removeAttr("disabled", "");
+			$("#pause").attr("disabled", "");
+			$("#stop").attr("disabled", "");
+			$("#save").removeAttr("disabled", "");
 		});
 
 		$("#save").on("tap", function(){
 			saveTrack();
+			
+			$("#play").removeAttr("disabled", "");
+			$("#pause").attr("disabled", "");
+			$("#stop").attr("disabled", "");
+			$("#save").attr("disabled", "");
 		});
 
 		function startEmulatedTracker() {
@@ -74,7 +94,6 @@ var app = {
 				
 				timeID = setInterval(function () {onTimeInterval()}, 1000);
 				geoIntervalID = setInterval(function () {onGeolocationInterval()}, 5000);
-				geolocationID = navigator.geolocation.watchPosition(onGeolocationSuccess, onGeolocationError,{ maximumAge: 3000, timeout: 5000, enableHighAccuracy: true });
 			}
 		}
 		
@@ -136,33 +155,24 @@ var app = {
 				gpxTrack += '      </trkpt>' + '\n';	
 			});
 			gpxTrack += gpxFooter;
-			//for (let trkpt of track) {
-				//gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
-				//gpxTrack += '        <ele>' + trkpt.altitude + '</ele>' + '\n';
-				//gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
-				//gpxTrack += '      </trkpt>' + '\n';
-			//};
 
 			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
 
 			function gotFS(fileSystem) {
-				console.log("getFile: " + "Track-" + now.yyyymmdd() + ".gpx");
-				fileSystem.root.getFile("Track-" + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
-			}
-
-			function gotFileEntry(fileEntry) {
-				fileEntry.createWriter(gotFileWriter, fail);
-			}
-
-			function gotFileWriter(writer) {
-				writer.write(gpxTrack);
-				writer.onwriteend = function(evt) {
-					console.log("file write done");
-				};
+				fileSystem.root.getDirectory("Tracker", {create:true}, gotDirectory, fail);
+				function gotDirectory(directoryEntry){
+					directoryEntry.getFile("Track-" + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
+					function gotFileEntry(fileEntry) {
+						fileEntry.createWriter(gotFileWriter, fail);
+						function gotFileWriter(writer) {
+							writer.write(gpxTrack);
+						}
+					}
+				}
 			}
 
 			function fail(error) {
-				console.log(error.code);
+				console.log("Failed to write Tracker/Track-" + now.yyyymmdd() + ".gpx (error " + error.code + ")");
 			}
 		}
 		
@@ -189,7 +199,7 @@ var app = {
 		function onGeolocationUpdate(position) {
 			if(typeof(currentPosition) !== "undefined") {
 				var newLatLon = new LatLon(position.coords.latitude, position.coords.longitude);
-				var currentLatLon = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude)
+				var currentLatLon = new LatLon(c&	urrentPosition.coords.latitude, currentPosition.coords.longitude)
 				var step = currentLatLon.distanceTo(newLatLon);
 				var stepTime = (position.timestamp - currentPosition.timestamp) / 1000; //seconds
 
@@ -216,20 +226,9 @@ var app = {
 			track.push(position);
 			updateGeolocationIndicators();
 		}
-		
-		function onGeolocationSuccess(position) {
-			console.log(new Date().toLocaleTimeString() 
-						+ ' Latitude: ' + position.coords.latitude  
-						+ ' Longitude: ' + position.coords.longitude 
-						+ ' Altitude: ' + position.coords.altitude
-						+ ' Accuracy: ' + position.coords.accuracy
-						+ ' Speed: ' + position.coords.speed
-						+ ' Time: ' + new Date(position.timestamp).toISOString());
-		}
-		
+			
 		function onGeolocationError(error) {
-			console.log('onError: ' + error);
-			alert('onError!');
+			console.log('onGeolocationError: ' + error);
 		}
 
 		function updateTimerIndicator() {
