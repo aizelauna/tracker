@@ -20,6 +20,21 @@ var app = {
     // Application Constructor
     initialize: function() {
         this.bindEvents();
+        
+		$(function(){
+			$( "[data-role='navbar']" ).navbar();
+    		$( "[data-role='header'], [data-role='footer']" ).toolbar();
+		});
+		
+		document.addEventListener("backbutton", function(e){
+		   if($.mobile.activePage.is('#page-live-tracking')){
+			   e.preventDefault();
+			   navigator.app.exitApp();
+		   }
+		   else {
+			   navigator.app.backHistory()
+		   }
+		}, false);		
     },
     // Bind Event Listeners
     //
@@ -33,6 +48,16 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
+		$("#play").attr("disabled", "");
+		$("#pause").attr("disabled", "");
+		$("#stop").attr("disabled", "");
+		$("#save").attr("disabled", "");
+ 
+		
+		app.manageLiveTracking();
+    },
+    
+    manageLiveTracking: function() {
 		var timeID;
 		var geoIntervalID;
 		var geolocationID;
@@ -40,38 +65,35 @@ var app = {
 		var currentPosition;
 		var distance = 0; // meters
 		var rythme = 0; // min/km
-		var track;
-		
-		$("#play").removeAttr("disabled");
-		$("#pause").attr("disabled", "");
-		$("#stop").attr("disabled", "");
-		$("#save").attr("disabled", "");
+		var track;	
+
+		$("#play").removeAttr("disabled", "");
 		
 		$("#play").on("tap", function(){
-			startEmulatedTracker();
-			
 			$("#play").attr("disabled", "");
+			$("#save").attr("disabled", "");
 			$("#pause").removeAttr("disabled", "");
 			$("#stop").removeAttr("disabled", "");
-			$("#save").attr("disabled", "");
+			
+			startEmulatedTracker();			
 		});
 
 		$("#stop").on("tap", function(){
-			stopTracker();
-			
-			$("#play").removeAttr("disabled", "");
 			$("#pause").attr("disabled", "");
 			$("#stop").attr("disabled", "");
+			$("#play").removeAttr("disabled", "");
 			$("#save").removeAttr("disabled", "");
+			
+			stopTracker();
 		});
 
 		$("#save").on("tap", function(){
-			saveTrack();
-			
-			$("#play").removeAttr("disabled", "");
 			$("#pause").attr("disabled", "");
 			$("#stop").attr("disabled", "");
 			$("#save").attr("disabled", "");
+			$("#play").removeAttr("disabled", "");
+			
+			saveTrack();
 		});
 
 		function startEmulatedTracker() {
@@ -199,7 +221,7 @@ var app = {
 		function onGeolocationUpdate(position) {
 			if(typeof(currentPosition) !== "undefined") {
 				var newLatLon = new LatLon(position.coords.latitude, position.coords.longitude);
-				var currentLatLon = new LatLon(c&	urrentPosition.coords.latitude, currentPosition.coords.longitude)
+				var currentLatLon = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude)
 				var step = currentLatLon.distanceTo(newLatLon);
 				var stepTime = (position.timestamp - currentPosition.timestamp) / 1000; //seconds
 
@@ -256,8 +278,6 @@ var app = {
 			       + '-' + (dd[1]?dd:"0"+dd[0])
 			       + '-' + (hh[1]?hh:"0"+hh[0])
 			       + '-' + (min[1]?min:"0"+min[0]);
-		};  
-
-d
+		};
     }
 };

@@ -20,6 +20,21 @@ var app = {
     // Application Constructor
     initialize: function() {
         this.bindEvents();
+        
+		$(function(){
+			$( "[data-role='navbar']" ).navbar();
+    		$( "[data-role='header'], [data-role='footer']" ).toolbar();
+		});
+		
+		document.addEventListener("backbutton", function(e){
+		   if($.mobile.activePage.is('#page-live-tracking')){
+			   e.preventDefault();
+			   navigator.app.exitApp();
+		   }
+		   else {
+			   navigator.app.backHistory()
+		   }
+		}, false);		
     },
     // Bind Event Listeners
     //
@@ -33,6 +48,16 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
+		$("#play").attr("disabled", "");
+		$("#pause").attr("disabled", "");
+		$("#stop").attr("disabled", "");
+		$("#save").attr("disabled", "");
+ 
+		
+		app.manageLiveTracking();
+    },
+    
+    manageLiveTracking: function() {
 		var timeID;
 		var geoIntervalID;
 		var geolocationID;
@@ -40,17 +65,34 @@ var app = {
 		var currentPosition;
 		var distance = 0; // meters
 		var rythme = 0; // min/km
-		var track;
+		var track;	
+
+		$("#play").removeAttr("disabled", "");
 		
 		$("#play").on("tap", function(){
-			startEmulatedTracker();
+			$("#play").attr("disabled", "");
+			$("#save").attr("disabled", "");
+			$("#pause").removeAttr("disabled", "");
+			$("#stop").removeAttr("disabled", "");
+			
+			startEmulatedTracker();			
 		});
 
 		$("#stop").on("tap", function(){
+			$("#pause").attr("disabled", "");
+			$("#stop").attr("disabled", "");
+			$("#play").removeAttr("disabled", "");
+			$("#save").removeAttr("disabled", "");
+			
 			stopTracker();
 		});
 
 		$("#save").on("tap", function(){
+			$("#pause").attr("disabled", "");
+			$("#stop").attr("disabled", "");
+			$("#save").attr("disabled", "");
+			$("#play").removeAttr("disabled", "");
+			
 			saveTrack();
 		});
 
@@ -74,7 +116,6 @@ var app = {
 				
 				timeID = setInterval(function () {onTimeInterval()}, 1000);
 				geoIntervalID = setInterval(function () {onGeolocationInterval()}, 5000);
-				geolocationID = navigator.geolocation.watchPosition(onGeolocationSuccess, onGeolocationError,{ maximumAge: 3000, timeout: 5000, enableHighAccuracy: true });
 			}
 		}
 		
@@ -136,33 +177,24 @@ var app = {
 				gpxTrack += '      </trkpt>' + '\n';	
 			});
 			gpxTrack += gpxFooter;
-			//for (let trkpt of track) {
-				//gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
-				//gpxTrack += '        <ele>' + trkpt.altitude + '</ele>' + '\n';
-				//gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
-				//gpxTrack += '      </trkpt>' + '\n';
-			//};
 
 			window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
 
 			function gotFS(fileSystem) {
-				console.log("getFile: " + "Track-" + now.yyyymmdd() + ".gpx");
-				fileSystem.root.getFile("Track-" + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
-			}
-
-			function gotFileEntry(fileEntry) {
-				fileEntry.createWriter(gotFileWriter, fail);
-			}
-
-			function gotFileWriter(writer) {
-				writer.write(gpxTrack);
-				writer.onwriteend = function(evt) {
-					console.log("file write done");
-				};
+				fileSystem.root.getDirectory("Tracker", {create:true}, gotDirectory, fail);
+				function gotDirectory(directoryEntry){
+					directoryEntry.getFile("Track-" + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
+					function gotFileEntry(fileEntry) {
+						fileEntry.createWriter(gotFileWriter, fail);
+						function gotFileWriter(writer) {
+							writer.write(gpxTrack);
+						}
+					}
+				}
 			}
 
 			function fail(error) {
-				console.log(error.code);
+				console.log("Failed to write Tracker/Track-" + now.yyyymmdd() + ".gpx (error " + error.code + ")");
 			}
 		}
 		
@@ -216,20 +248,9 @@ var app = {
 			track.push(position);
 			updateGeolocationIndicators();
 		}
-		
-		function onGeolocationSuccess(position) {
-			console.log(new Date().toLocaleTimeString() 
-						+ ' Latitude: ' + position.coords.latitude  
-						+ ' Longitude: ' + position.coords.longitude 
-						+ ' Altitude: ' + position.coords.altitude
-						+ ' Accuracy: ' + position.coords.accuracy
-						+ ' Speed: ' + position.coords.speed
-						+ ' Time: ' + new Date(position.timestamp).toISOString());
-		}
-		
+			
 		function onGeolocationError(error) {
-			console.log('onError: ' + error);
-			alert('onError!');
+			console.log('onGeolocationError: ' + error);
 		}
 
 		function updateTimerIndicator() {
@@ -257,8 +278,6 @@ var app = {
 			       + '-' + (dd[1]?dd:"0"+dd[0])
 			       + '-' + (hh[1]?hh:"0"+hh[0])
 			       + '-' + (min[1]?min:"0"+min[0]);
-		};  
-
-d
+		};
     }
 };
