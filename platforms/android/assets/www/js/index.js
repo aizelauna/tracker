@@ -22,8 +22,7 @@ var app = {
         this.bindEvents();
         
 		$(function(){
-			$( "[data-role='navbar']" ).navbar();
-    		$( "[data-role='header'], [data-role='footer']" ).toolbar();
+    		$( "[data-role='footer']" ).toolbar();
 		});
 		
 		document.addEventListener("backbutton", function(e){

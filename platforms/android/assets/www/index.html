@@ -55,20 +55,11 @@
 </head>
 <body>
 <div class="app">
-	<div data-role="header" data-position="fixed" data-theme="a" style="overflow:hidden;">
-		<!--
-		<h1>Tracker</h1>
-		<a href="#" data-icon="gear" class="ui-btn-right">Options</a>
-		-->
-		<div data-role="navbar">
-			<ul>
-				<li><a href="#page-live-tracking" data-transition="slide" data-direction="reverse">Live tracking</a></li>
-				<li><a href="#page-history" data-transition="slide">History</a></li>
-			</ul>
-		</div>
-	</div><!-- /header -->
 
 	<div id="page-live-tracking"  data-role="page">
+		<div data-role="header" data-position="fixed">
+			<h1>Live tracking</h1>
+		</div><!-- /header -->
 		<div role="main" class="ui-content">
 			
 			<div>
@@ -115,12 +106,16 @@
 	</div><!-- /page -->
 
 	<div id="page-history" data-role="page">
+		<div data-role="header" data-position="fixed">
+			<h1>History</h1>
+		</div><!-- /header -->
 		<div role="main" class="ui-content">
-			<h1>History content</h1>
+			Track 1<br>
+			Track 2
 		</div><!-- /content -->		
 	</div><!-- /page -->
 
-	<div data-role="footer" data-position="fixed" data-theme="a">
+	<div data-role="footer" data-position="fixed" data-tap-toggle="false" data-theme="a">
 		<h1>Home: <a href="http://tracker.esponde.net">tracker.esponde.net</a></h1>
 	</div><!-- /footer -->
 </div>
