@@ -26,13 +26,24 @@ var app = {
 		});
 		
 		document.addEventListener("backbutton", function(e){
-		   if($.mobile.activePage.is('#page-live-tracking')){
-			   e.preventDefault();
-			   navigator.app.exitApp();
-		   }
-		   else {
-			   navigator.app.backHistory()
-		   }
+			if($.mobile.activePage.is('#page-live-tracking')){
+				navigator.notification.confirm(
+					'Do you want to exit ?',  // message
+					function onConfirm(buttonIndex) {
+						if(buttonIndex === 1) {
+							if(typeof(window.plugin) !== "undefined") {
+								window.plugin.notification.local.cancelAll();
+							}
+							e.preventDefault();
+							navigator.app.exitApp();
+						}
+					}
+				);
+
+			}
+			else {
+				navigator.app.backHistory()
+			}
 		}, false);		
     },
     // Bind Event Listeners
@@ -51,7 +62,10 @@ var app = {
 		$("#pause").attr("disabled", "");
 		$("#stop").attr("disabled", "");
 		$("#save").attr("disabled", "");
- 
+
+		if(typeof(window.plugin) !== "undefined") {
+			window.plugin.notification.local.add({ title: 'Tracker', message: 'Running. Tap to open.', sound: null, ongoing: true });
+		}
 		
 		app.manageLiveTracking();
     },
@@ -74,7 +88,7 @@ var app = {
 			$("#pause").removeAttr("disabled", "");
 			$("#stop").removeAttr("disabled", "");
 			
-			startEmulatedTracker();			
+			startTracker();			
 		});
 
 		$("#stop").on("tap", function(){
@@ -182,7 +196,7 @@ var app = {
 			function gotFS(fileSystem) {
 				fileSystem.root.getDirectory("Tracker", {create:true}, gotDirectory, fail);
 				function gotDirectory(directoryEntry){
-					directoryEntry.getFile("Track-" + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
+					directoryEntry.getFile("Track " + now.yyyymmdd() + ".gpx", {create: true, exclusive: false}, gotFileEntry, fail);
 					function gotFileEntry(fileEntry) {
 						fileEntry.createWriter(gotFileWriter, fail);
 						function gotFileWriter(writer) {
@@ -222,6 +236,9 @@ var app = {
 				var newLatLon = new LatLon(position.coords.latitude, position.coords.longitude);
 				var currentLatLon = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude)
 				var step = currentLatLon.distanceTo(newLatLon);
+				if(step < 0.00005) {
+					step = 0;	//under 5cm/second, we consider that there is no movement
+				}
 				var stepTime = (position.timestamp - currentPosition.timestamp) / 1000; //seconds
 
 				currentPosition = position;
@@ -271,12 +288,30 @@ var app = {
 			var dd  = this.getDate().toString();             
 			var hh  = this.getHours().toString();             
 			var min  = this.getMinutes().toString();             
+			var sec  = this.getSeconds().toString();             
                             
 			return yyyy 
 			       + '-' + (mm[1]?mm:"0"+mm[0]) 
 			       + '-' + (dd[1]?dd:"0"+dd[0])
-			       + '-' + (hh[1]?hh:"0"+hh[0])
-			       + '-' + (min[1]?min:"0"+min[0]);
+			       + ' ' + (hh[1]?hh:"0"+hh[0])
+			       + '-' + (min[1]?min:"0"+min[0])
+			       + '-' + (sec[1]?sec:"0"+sec[0]);
 		};
-    }
+    },
+
+    logObject: function(o) {
+		var cache = [];
+		console.log(JSON.stringify(o, function(key, value) {
+			if (typeof value === 'object' && value !== null) {
+				if (cache.indexOf(value) !== -1) {
+					// Circular reference found, discard key
+					return;
+				}
+				// Store value in our collection
+				cache.push(value);
+			}
+			return value;
+		}));
+		cache = null;
+	}
 };

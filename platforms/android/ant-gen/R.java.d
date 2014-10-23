@@ -1,4 +1,4 @@
-/home/joel/Documents/Projets/tracker/platforms/android/ant-gen/com/phonegap/helloworld/R.java \
+/home/joel/Documents/Projets/tracker/platforms/android/ant-gen/net/esponde/tracker/R.java \
  : /home/joel/Documents/Projets/tracker/platforms/android/res/xml/config.xml \
 /home/joel/Documents/Projets/tracker/platforms/android/res/drawable-ldpi/icon.png \
 /home/joel/Documents/Projets/tracker/platforms/android/res/drawable-land-xhdpi/screen.png \
