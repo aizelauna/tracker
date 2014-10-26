@@ -39,12 +39,24 @@ var app = {
 						}
 					}
 				);
-
 			}
 			else {
 				navigator.app.backHistory()
 			}
 		}, false);		
+
+		$.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
+		$.event.special.swipe.horizontalDistanceThreshold = Math.round(30 / window.devicePixelRatio); // Swipe horizontal displacement must be more than this.
+		$.event.special.swipe.durationThreshold = 500;  // More time than this, and it isn't a swipe.
+		$.event.special.swipe.verticalDistanceThreshold = 75; // Swipe vertical displacement must be less than this.
+		
+		$(document).on("swipeleft", "#page-live-tracking", function() {
+			app.updateHistory();
+			$.mobile.changePage("#page-history", {transition: "slide", reverse: false});
+		});
+		$(document).on("swiperight", "#page-history", function() {
+			$.mobile.changePage("#page-live-tracking", {transition: "slide", reverse: true});
+		});		
     },
     // Bind Event Listeners
     //
@@ -71,14 +83,22 @@ var app = {
     },
     
     manageLiveTracking: function() {
-		var timeID;
-		var geoIntervalID;
-		var geolocationID;
-		var startTime;
-		var currentPosition;
+		var timeID = undefined;
+		var geoIntervalID = undefined;
+		var geolocationID = undefined;
+		var startTime = 0;
+		var currentPosition = undefined;
 		var distance = 0; // meters
-		var rythme = 0; // min/km
+		var pace = 0; // min/km
 		var track;	
+
+		//geoIntervalID = setInterval(function () {onGeolocationInterval()}, 5000);
+		geolocationID = navigator.geolocation.watchPosition(
+			onGeolocationUpdate, onGeolocationError,
+			{ maximumAge: 2000, 
+			  timeout: 3000, 
+			  enableHighAccuracy: true 
+		    });
 
 		$("#play").removeAttr("disabled", "");
 		
@@ -88,7 +108,7 @@ var app = {
 			$("#pause").removeAttr("disabled", "");
 			$("#stop").removeAttr("disabled", "");
 			
-			startTracker();			
+			startTracker();
 		});
 
 		$("#stop").on("tap", function(){
@@ -109,46 +129,23 @@ var app = {
 			saveTrack();
 		});
 
-		function startEmulatedTracker() {
-			if(typeof(geoIntervalID) == "undefined") {
-				startTime = Date.now();
-				currentPosition = {
-					coords: {
-						latitude: 43.37372818,
-						longitude: 1.74102725,
-						altitude:280
-					},
-					timestamp: Date.now()
-				};
-				distance = 0;
-				rythme = 0;
-				track = new Array();
-				
-				updateTimerIndicator();
-				updateGeolocationIndicators();
-				
-				timeID = setInterval(function () {onTimeInterval()}, 1000);
-				geoIntervalID = setInterval(function () {onGeolocationInterval()}, 5000);
-			}
-		}
-		
 		function startTracker() {
-			if(typeof(geolocationID) == "undefined") {
+			if(typeof(geolocationID) !== "undefined") {
 				startTime = Date.now();
 				currentPosition = undefined;
 				distance = 0;
-				rythme = 0;
+				pace = 0;
 				track = new Array();
 				
 				updateTimerIndicator();
 				updateGeolocationIndicators();
 				
 				timeID = setInterval(function () {onTimeInterval()}, 1000);
-				geolocationID = navigator.geolocation.watchPosition(onGeolocationUpdate, onGeolocationError,{ maximumAge: 3000, timeout: 5000, enableHighAccuracy: true });
 			}
 		}
 		
 		function stopTracker() {
+			startTime = 0;
 			if(typeof(timeID) !== "undefined") {
 				clearInterval(timeID);
 				timeID = undefined
@@ -186,7 +183,7 @@ var app = {
 			track.forEach(function (trkpt) {
 				gpxTrack += '      <trkpt lat="' + trkpt.coords.latitude + '" lon="' + trkpt.coords.longitude + '">' + '\n';
 				gpxTrack += '        <ele>' + trkpt.coords.altitude + '</ele>' + '\n';
-				gpxTrack += '        <time>' + trkpt.timestamp + '</time>' + '\n';
+				gpxTrack += '        <time>' + new Date(trkpt.timestamp).toISOString() + '</time>' + '\n';
 				gpxTrack += '      </trkpt>' + '\n';	
 			});
 			gpxTrack += gpxFooter;
@@ -215,58 +212,44 @@ var app = {
 			updateTimerIndicator();
 		}
 		
-		function onGeolocationInterval() {
-			var step = 0.015 + 0.015*0.2*Math.random() - 0.015*0.1;
-			var angle = 45 + 45*0.2*Math.random() - 45*0.1;
-			var newPosition = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude).destinationPoint(angle,step);
-			var position = {
-				coords: {
-					latitude: newPosition.lat,
-					longitude: newPosition.lon,
-					altitude:270
-				},
-				timestamp: Date.now()
-			};
-
-			onGeolocationUpdate(position);
-		}
-		
 		function onGeolocationUpdate(position) {
-			if(typeof(currentPosition) !== "undefined") {
-				var newLatLon = new LatLon(position.coords.latitude, position.coords.longitude);
-				var currentLatLon = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude)
-				var step = currentLatLon.distanceTo(newLatLon);
-				if(step < 0.00005) {
-					step = 0;	//under 5cm/second, we consider that there is no movement
-				}
-				var stepTime = (position.timestamp - currentPosition.timestamp) / 1000; //seconds
-
-				currentPosition = position;
-				distance += step;
-				if(step != 0) {
-					rythme = (rythme + 1/(step*(60/stepTime))) / 2;
-				}
-				
-				console.log(new Date().toLocaleTimeString() 
-							+ ' Latitude: ' + position.coords.latitude  
-							+ ' Longitude: ' + position.coords.longitude 
-							+ ' Altitude: ' + position.coords.altitude
-							+ ' Accuracy: ' + position.coords.accuracy
-							+ ' Speed: ' + position.coords.speed
-							+ ' Time: ' + new Date(position.timestamp).toISOString());
-				console.log(new Date().toLocaleTimeString() 
-							+ ' Step: ' + step*1000
-							+ ' stepTime: ' + stepTime);
-							
-			} else {
-				currentPosition = position;			
+			var step = 0;
+			$("#gps-status").text((position.coords.accuracy < 10) ? "GPS: Ready" : "GPS: Fixing...");
+			
+			if(startTime > 0) {
+				if(typeof(currentPosition) === "undefined") {
+					currentPosition = position;			
+					track.push(position);
+				} else {
+					var newLatLon = new LatLon(position.coords.latitude, position.coords.longitude);
+					var currentLatLon = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude)
+					var stepTime = (position.timestamp - currentPosition.timestamp) / 1000; //time in seconds
+					step = currentLatLon.distanceTo(newLatLon);
+					stepPace = 1/(step*(60/stepTime));
+					
+					if(step >= 0.001 || stepTime > 60) {		//more than 1 meter or 1 minute
+						currentPosition = position;
+						distance += step;
+						pace = (pace + 15*stepPace) / 16;
+						track.push(position);
+					} else if(stepPace < 240) {		//more than 240 min/km (very slow speed)
+						pace = (pace + 15*stepPace) / 16;
+					} else { 	//we are no more moving
+						pace = 0;	
+					}
+				} 
+				updateGeolocationIndicators();
 			}
-			track.push(position);
-			updateGeolocationIndicators();
+			
+			//console.log(' Latitude: ' + position.coords.latitude  
+						//+ ' Longitude: ' + position.coords.longitude 
+						//+ ' Altitude: ' + position.coords.altitude
+						//+ ' Step: ' + step*1000
+						//+ ' Time: ' + new Date(position.timestamp).toISOString());
 		}
 			
 		function onGeolocationError(error) {
-			console.log('onGeolocationError: ' + error);
+			$("#gps-status").text("GPS: Fixing...");
 		}
 
 		function updateTimerIndicator() {
@@ -274,14 +257,42 @@ var app = {
 			d.setHours(0);
 			d.setMinutes(0);
 			d.setSeconds((Date.now() - startTime) / 1000);
-			document.getElementById("duration").innerHTML = d.toLocaleTimeString();
+			$("#duration").text(d.toLocaleTimeString());
 		}
 		
 		function updateGeolocationIndicators() {
-			document.getElementById("distance").innerHTML = (distance).toFixed(2);
-			document.getElementById("rythme").innerHTML = rythme.toFixed(1);
+			$("#distance").text(distance.toFixed(2));
+			$("#pace").text(pace.toFixed(1));
 		}
 		
+		function onGeolocationInterval() {
+			var position;
+			if(typeof(currentPosition) === "undefined") {
+				position = {
+					coords: {
+						latitude: 43.37372818,
+						longitude: 1.74102725,
+						altitude:280
+					},
+					timestamp: Date.now()
+				};
+			} else {			
+				var step = 0.015 + 0.015*0.2*Math.random() - 0.015*0.1;
+				var angle = 45 + 45*0.2*Math.random() - 45*0.1;
+				var newPosition = new LatLon(currentPosition.coords.latitude, currentPosition.coords.longitude).destinationPoint(angle,step);
+				position = {
+					coords: {
+						latitude: newPosition.lat,
+						longitude: newPosition.lon,
+						altitude:270
+					},
+					timestamp: Date.now()
+				};
+			}
+			
+			onGeolocationUpdate(position);
+		}
+				
 		Date.prototype.yyyymmdd = function() {                                 
 			var yyyy = this.getFullYear().toString();                                    
 			var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based         
@@ -296,8 +307,31 @@ var app = {
 			       + ' ' + (hh[1]?hh:"0"+hh[0])
 			       + '-' + (min[1]?min:"0"+min[0])
 			       + '-' + (sec[1]?sec:"0"+sec[0]);
-		};
+		};		
     },
+
+    updateHistory: function() {
+		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
+
+		function gotFS(fileSystem) {
+			fileSystem.root.getDirectory("Tracker", {create:true}, gotDirectory, fail);
+			function gotDirectory(directoryEntry){
+				directoryEntry.createReader().readEntries(function(entries) {
+					$("#history").empty();
+					entries.forEach(function(entry) {
+						if(entry.isFile) {
+							$("#history").append('<li><a href="#">' + entry.name + '</a></li>');
+						}
+					});
+					$("#history").listview("refresh");
+				});				
+			}
+		}
+		
+		function fail(error) {
+			console.log("Failed to read Tracker folder (error " + error.code + ")");
+		}
+	},
 
     logObject: function(o) {
 		var cache = [];

@@ -38,18 +38,6 @@
 
 	<script type="text/javascript">
 		app.initialize();
-			
-		$.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
-		$.event.special.swipe.horizontalDistanceThreshold = Math.round(30 / window.devicePixelRatio); // Swipe horizontal displacement must be more than this.
-		$.event.special.swipe.durationThreshold = 500;  // More time than this, and it isn't a swipe.
-		$.event.special.swipe.verticalDistanceThreshold = 75; // Swipe vertical displacement must be less than this.
-		
-		$(document).on("swipeleft", "#page-live-tracking", function() {
-			$.mobile.changePage("#page-history", {transition: "slide", reverse: false});
-		});
-		$(document).on("swiperight", "#page-history", function() {
-			$.mobile.changePage("#page-live-tracking", {transition: "slide", reverse: true});
-		});
 	</script>
 
 </head>
@@ -96,7 +84,7 @@
 					<path d="M2 0v1h1v.03c-1.7.24-3 1.71-3 3.47 0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5c0-.45-.1-.87-.25-1.25l-.91.38c.11.29.16.57.16.88 0 1.39-1.11 2.5-2.5 2.5s-2.5-1.11-2.5-2.5 1.11-2.5 2.5-2.5c.3 0 .59.05.88.16l.34-.94c-.23-.08-.47-.12-.72-.16v-.06h1v-1h-3zm5 1.16s-3.65 2.81-3.84 3c-.19.2-.19.49 0 .69.19.2.49.2.69 0 .2-.2 3.16-3.69 3.16-3.69z" />
 				</svg>
 				<div class="indicator_title">Rythme</div>
-				<div><span id="rythme">0.0</span><span class="indicator_unit"> min/km</span></div>
+				<div><span id="pace">0.0</span><span class="indicator_unit"> min/km</span></div>
 			</div>
 			<div style="clear:both;"></div>
 			
@@ -110,13 +98,16 @@
 			<h1>History</h1>
 		</div><!-- /header -->
 		<div role="main" class="ui-content">
-			Track 1<br>
-			Track 2
+			<ol id="history" data-role="listview" data-inset="true" reversed="true">
+			</ol>
 		</div><!-- /content -->		
 	</div><!-- /page -->
 
 	<div data-role="footer" data-position="fixed" data-tap-toggle="false" data-theme="a">
-		<h1>Home: <a href="http://tracker.esponde.net">tracker.esponde.net</a></h1>
+		<h1>
+			<span id="gps-status" style="float:left">GPS: Fixing...</span>
+			<span style="float:right">Home: <a href="http://tracker.esponde.net">tracker.esponde.net</a></span>
+		</h1>
 	</div><!-- /footer -->
 </div>
 </body>
