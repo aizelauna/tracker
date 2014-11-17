@@ -61,6 +61,10 @@
                         {
                             "xml": "<feature name=\"Notification\"><param name=\"android-package\" value=\"org.apache.cordova.dialogs.Notification\" /></feature>",
                             "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"TTS\"><param name=\"android-package\" value=\"org.apache.cordova.plugin.TTS\" /></feature>",
+                            "count": 1
                         }
                     ]
                 }
@@ -78,6 +82,9 @@
             "PACKAGE_NAME": "com.phonegap.helloworld"
         },
         "org.apache.cordova.dialogs": {
+            "PACKAGE_NAME": "net.esponde.tracker"
+        },
+        "org.apache.cordova.plugin.tts": {
             "PACKAGE_NAME": "net.esponde.tracker"
         }
     },

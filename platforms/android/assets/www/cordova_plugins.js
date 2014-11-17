@@ -168,6 +168,13 @@ module.exports = [
         ]
     },
     {
+        "file": "plugins/org.apache.cordova.plugin.tts/www/tts.js",
+        "id": "org.apache.cordova.plugin.tts.tts",
+        "clobbers": [
+            "navigator.tts"
+        ]
+    },
+    {
         "file": "plugins/org.apache.cordova.device/www/device.js",
         "id": "org.apache.cordova.device.device",
         "clobbers": [
@@ -182,6 +189,7 @@ module.exports.metadata =
     "org.apache.cordova.file": "1.3.1",
     "de.appplant.cordova.plugin.local-notification": "0.7.6",
     "org.apache.cordova.dialogs": "0.2.10",
+    "org.apache.cordova.plugin.tts": "0.2.0",
     "org.apache.cordova.device": "0.2.13-dev"
 }
 // BOTTOM OF METADATA

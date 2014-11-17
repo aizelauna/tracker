@@ -27,6 +27,7 @@
 	<!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 	<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
 	<link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.3/jquery.mobile-1.4.3.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/tracker.css" />
 	<link rel="stylesheet" type="text/css" href="css/index.css" />
 	<title>Tracker</title>
 	
@@ -38,18 +39,6 @@
 
 	<script type="text/javascript">
 		app.initialize();
-			
-		$.event.special.swipe.scrollSupressionThreshold = 10; // More than this horizontal displacement, and we will suppress scrolling.
-		$.event.special.swipe.horizontalDistanceThreshold = Math.round(30 / window.devicePixelRatio); // Swipe horizontal displacement must be more than this.
-		$.event.special.swipe.durationThreshold = 500;  // More time than this, and it isn't a swipe.
-		$.event.special.swipe.verticalDistanceThreshold = 75; // Swipe vertical displacement must be less than this.
-		
-		$(document).on("swipeleft", "#page-live-tracking", function() {
-			$.mobile.changePage("#page-history", {transition: "slide", reverse: false});
-		});
-		$(document).on("swiperight", "#page-history", function() {
-			$.mobile.changePage("#page-live-tracking", {transition: "slide", reverse: true});
-		});
 	</script>
 
 </head>
@@ -58,13 +47,13 @@
 
 	<div id="page-live-tracking"  data-role="page">
 		<div data-role="header" data-position="fixed">
-			<h1>Live tracking</h1>
+			<h1>Live Tracking</h1>
 		</div><!-- /header -->
 		<div role="main" class="ui-content">
 			
 			<div>
 				<button id="play" class="ui-btn ui-btn-inline ui-icon-tracker-play ui-btn-icon-notext ui-corner-all btn-tracking">Play</button>
-				<button id="pause" class="ui-btn ui-btn-inline ui-icon-tracker-pause ui-btn-icon-notext ui-corner-all btn-tracking">Pause</button>
+				<!-- <button id="pause" class="ui-btn ui-btn-inline ui-icon-tracker-pause ui-btn-icon-notext ui-corner-all btn-tracking">Pause</button> -->
 				<button id="stop" class="ui-btn ui-btn-inline ui-icon-tracker-stop ui-btn-icon-notext ui-corner-all btn-tracking">Stop</button>
 				<button id="save" class="ui-btn ui-btn-inline ui-icon-tracker-save ui-btn-icon-notext ui-corner-all btn-tracking">Save</button>
 			</div>
@@ -74,7 +63,7 @@
 			<div class="indicator_centered">
 				<!-- clock -->
 				<svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 8 8">
-					<path d="M4 0c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 1c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm-.5 1v2.22l.16.13.5.5.34.38.72-.72-.38-.34-.34-.34v-1.81h-1z" />
+					<path d="M4 0c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 1c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm-.5 1v2.22l.16.13.5.5.34.38.72-.72-.38-.34-.34-.34v-1.81h-1z" fill="#730800" />
 				</svg>
 				<div class="indicator_title">Dur&eacute;e</div>
 				<div id="duration" class="indicator_unit">00:00:00</div>
@@ -85,7 +74,7 @@
 			<div class="indicator_left">
 				<!-- map-marker -->
 				<svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 8 8">
-					<path d="M3 0c-1.66 0-3 1.34-3 3 0 2 3 5 3 5s3-3 3-5c0-1.66-1.34-3-3-3zm0 1c1.11 0 2 .9 2 2 0 1.11-.89 2-2 2-1.1 0-2-.89-2-2 0-1.1.9-2 2-2z" transform="translate(1)" />
+					<path d="M3 0c-1.66 0-3 1.34-3 3 0 2 3 5 3 5s3-3 3-5c0-1.66-1.34-3-3-3zm0 1c1.11 0 2 .9 2 2 0 1.11-.89 2-2 2-1.1 0-2-.89-2-2 0-1.1.9-2 2-2z" transform="translate(1)" fill="#730800" />
 				</svg>
 				<div class="indicator_title">Distance</div>
 				<div><span id="distance">0.00</span><span class="indicator_unit"> km</span></div>
@@ -93,10 +82,10 @@
 			<div class="indicator_right">
 				<!-- timer -->
 				<svg xmlns="http://www.w3.org/2000/svg" width="1.5em" height="1.5em" viewBox="0 0 8 8">
-					<path d="M2 0v1h1v.03c-1.7.24-3 1.71-3 3.47 0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5c0-.45-.1-.87-.25-1.25l-.91.38c.11.29.16.57.16.88 0 1.39-1.11 2.5-2.5 2.5s-2.5-1.11-2.5-2.5 1.11-2.5 2.5-2.5c.3 0 .59.05.88.16l.34-.94c-.23-.08-.47-.12-.72-.16v-.06h1v-1h-3zm5 1.16s-3.65 2.81-3.84 3c-.19.2-.19.49 0 .69.19.2.49.2.69 0 .2-.2 3.16-3.69 3.16-3.69z" />
+					<path d="M2 0v1h1v.03c-1.7.24-3 1.71-3 3.47 0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5c0-.45-.1-.87-.25-1.25l-.91.38c.11.29.16.57.16.88 0 1.39-1.11 2.5-2.5 2.5s-2.5-1.11-2.5-2.5 1.11-2.5 2.5-2.5c.3 0 .59.05.88.16l.34-.94c-.23-.08-.47-.12-.72-.16v-.06h1v-1h-3zm5 1.16s-3.65 2.81-3.84 3c-.19.2-.19.49 0 .69.19.2.49.2.69 0 .2-.2 3.16-3.69 3.16-3.69z" fill="#730800" />
 				</svg>
 				<div class="indicator_title">Rythme</div>
-				<div><span id="pace">0.0</span><span class="indicator_unit"> min/km</span></div>
+				<div><span id="pace">--</span><span class="indicator_unit"> min/km</span></div>
 			</div>
 			<div style="clear:both;"></div>
 			
@@ -110,8 +99,19 @@
 			<h1>History</h1>
 		</div><!-- /header -->
 		<div role="main" class="ui-content">
-			Track 1<br>
-			Track 2
+			<ol id="history" data-role="listview" data-inset="true" reversed="true">
+			</ol>
+		</div><!-- /content -->		
+	</div><!-- /page -->
+
+	<div id="page-track" data-role="page">
+		<div data-role="header" data-position="fixed">
+			<h1>Track</h1>
+		</div><!-- /header -->
+		<div role="main" class="ui-content">
+			<p>Name: <span id="trackName">20/10/2014</span></p>
+			<p>Durée: 1h15</p>
+			<p>Distance: 11.65km</p>
 		</div><!-- /content -->		
 	</div><!-- /page -->
 
