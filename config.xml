@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="net.esponde.tracker" version="0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Tracker</name>
+    <description>
+        Tracker: Application that tracks all your running or bike sessions.
+    </description>
+    <author email="joel@esponde.net" href="http://tracker.esponde.net">
+        Joël Esponde
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+</widget>

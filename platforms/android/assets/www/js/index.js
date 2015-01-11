@@ -107,14 +107,14 @@ var app = {
 		var track;	
 		var ttsStarted = false;
 
-		geoIntervalID = setInterval(function () {onGeolocationInterval()}, 1000);
-		//app.TRACK_TYPE = "Testing";
-//		geolocationID = navigator.geolocation.watchPosition(
-//			onGeolocationUpdate, onGeolocationError,
-//			{ maximumAge: 2000, 
-//			  timeout: 3000, 
-//			  enableHighAccuracy: true 
-//			});
+//		geoIntervalID = setInterval(function () {onGeolocationInterval()}, 1000);
+//		app.TRACK_TYPE = "Testing";
+		geolocationID = navigator.geolocation.watchPosition(
+			onGeolocationUpdate, onGeolocationError,
+			{ maximumAge: 2000, 
+			  timeout: 3000, 
+			  enableHighAccuracy: true 
+			});
 
 		$("#play").removeAttr("disabled", "");
 		
@@ -335,25 +335,36 @@ var app = {
 				
 		function startTTS() {
 			if(typeof(navigator.tts) !== "undefined") {
-				navigator.tts.startup(win, fail);
-				function win(result) {
-					// When result is equal to STARTED(2), we are ready to play
-					if (result == 2) {	
-						console.log("navigator.tts started");
-						ttsStarted = true;		
+				navigator.tts.startup(
+					function (result) {
+						console.log("navigator.tts startup success: " + result);
+						// When result is equal to STARTED(2), we are ready to play
+						if (result == 2) {	
+							ttsStarted = true;		
+						}
+					},
+					function (result) {
+						console.log("navigator.tts startup error: " + result);
 					}
-				}
-				function fail(result) {
-					console.log("navigator.tts error=" + result);
-				}
+				);
 			}
 		}
+		
 		function stopTTS() {
 			if(ttsStarted) {
 				ttsStarted = false;
-				navigator.tts.shutdown();
+				navigator.tts.shutdown(
+					function () {
+						console.log("navigator.tts shutdown success");
+						ttsStarted = false;		
+					},
+					function () {
+						console.log("navigator.tts shutdown error");
+					}
+				);
 			}
 		}
+		
 		function announceTimes(trackTime, totalTime) {
 			var trackSeconds = Math.floor(trackTime % 60);
 			var trackMinutes = Math.floor((trackTime / 60) % 60);
@@ -453,3 +464,5 @@ var app = {
 		cache = null;
 	}
 };
+
+app.initialize();
