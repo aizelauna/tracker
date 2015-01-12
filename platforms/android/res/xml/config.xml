@@ -14,6 +14,9 @@
     <feature name="LocalNotification">
         <param name="android-package" value="de.appplant.cordova.plugin.localnotification.LocalNotification" />
     </feature>
+    <feature name="TTS">
+        <param name="android-package" value="org.apache.cordova.plugin.TTS" />
+    </feature>
     <name>Tracker</name>
     <description>
         Tracker: Application that tracks all your running or bike sessions.
@@ -23,7 +26,4 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
-    <feature name="TTS">
-        <param name="android-package" value="org.apache.cordova.plugin.TTS" />
-    </feature>
 </widget>

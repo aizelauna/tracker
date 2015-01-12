@@ -268,7 +268,7 @@ var app = {
 						var totalTime = (position.timestamp - track[0].timestamp) / 1000; //time in seconds
 						kmDistance += 1;
 						kmTimestamp = position.timestamp;
-						announceTimes(kmTime, totalTime);
+						announceTimes(kmDistance, kmTime, totalTime);
 					}
 				} 
 				updateGeolocationIndicators();
@@ -365,7 +365,7 @@ var app = {
 			}
 		}
 		
-		function announceTimes(trackTime, totalTime) {
+		function announceTimes(distance, trackTime, totalTime) {
 			var trackSeconds = Math.floor(trackTime % 60);
 			var trackMinutes = Math.floor((trackTime / 60) % 60);
 			var trackHours = Math.floor(trackTime / 3600);
@@ -374,7 +374,8 @@ var app = {
 			var totalHours = Math.floor(totalTime / 3600);
 			var text = "";
 			
-			text += "Vous avez parcouru un kilomètre en";
+			text += "Point kilométrique " + distance + ". ";
+			text += "Vous avez parcouru le dernier kilomètre en";
 			text += trackHours ? " " + trackHours + " heures" : "";
 			text += trackMinutes ? " " + trackMinutes + " minutes" : "";
 			text += trackSeconds ? " " + trackSeconds + " secondes" : "";
